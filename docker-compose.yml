@@ -9,11 +9,11 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/data
-      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+      - ./database/schema.sql:/docker-entrypoint-initdb.d/schema.sql
 
-  web:
-    build: .
-    container_name: flask-app
+  backend:
+    build: ./backend
+    container_name: flask-backend
     depends_on:
       - db
     env_file:
@@ -22,6 +22,13 @@ services:
       DATABASE_CONNECTION_STRING: "dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} host=db port=5432"
     ports:
       - "5000:5000"
+  frontend:
+    build: ./frontend
+    container_name: vite-frontend
+    ports:
+      - "3000:3000"
+    environment:
+      - VITE_API_URL=http://backend:5000
 
 volumes:
   pgdata:

@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <title>Sale Item 測試</title>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+</head>
+<body>
+  <div id="app">
+    <h2>註冊</h2>
+    <input v-model="reg_username" placeholder="帳號">
+    <input v-model="reg_password" type="password" placeholder="密碼">
+    <button @click="register">註冊</button>
+    <div v-if="reg_result">{{ reg_result }}</div>
+
+    <h2>登入</h2>
+    <input v-model="login_username" placeholder="帳號">
+    <input v-model="login_password" type="password" placeholder="密碼">
+    <button @click="login">登入</button>
+    <div v-if="login_result">{{ login_result }}</div>
+
+    <h2>建立商品</h2>
+    <input v-model="title" placeholder="標題">
+    <input v-model="description" placeholder="描述">
+    <input v-model="starting_price" type="number" placeholder="底價">
+    <input v-model="end_date" type="datetime-local" placeholder="結束時間">
+    <button @click="createItem">建立</button>
+    <div v-if="item_uuid">商品ID: {{ item_uuid }}</div>
+
+    <h2>出價</h2>
+    <input v-model="bid_price" type="number" placeholder="出價">
+    <button @click="placeBid">出價</button>
+    <div v-if="bid_result">{{ bid_result }}</div>
+  </div>
+
+  <script>
+    const { createApp } = Vue;
+    createApp({
+      data() {
+        return {
+          reg_username: '',
+          reg_password: '',
+          reg_result: '',
+          login_username: '',
+          login_password: '',
+          login_result: '',
+          title: '',
+          description: '',
+          starting_price: '',
+          end_date: '',
+          item_uuid: '',
+          bid_price: '',
+          bid_result: ''
+        }
+      },
+      methods: {
+        async register() {
+          const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: this.reg_username,
+              password: this.reg_password
+            })
+          });
+          const data = await res.json();
+          this.reg_result = JSON.stringify(data);
+        },
+        async login() {
+          const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              username: this.login_username,
+              password: this.login_password
+            })
+          });
+          const data = await res.json();
+          this.login_result = JSON.stringify(data);
+        },
+        async createItem() {
+          const res = await fetch('/api/sale_item', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              title: this.title,
+              description: this.description,
+              starting_price: this.starting_price,
+              end_date: this.end_date.replace('T', ' ')
+            })
+          });
+          const data = await res.json();
+          this.item_uuid = data.item_uuid || '';
+        },
+        async placeBid() {
+          if (!this.item_uuid) {
+            this.bid_result = '請先建立商品';
+            return;
+          }
+          const res = await fetch(`/api/sale_item/${this.item_uuid}/bid`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ price: this.bid_price })
+          });
+          const data = await res.json();
+          this.bid_result = JSON.stringify(data);
+        }
+      }
+    }).mount('#app');
+  </script>
+</body>
+</html>
