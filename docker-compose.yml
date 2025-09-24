@@ -1,0 +1,27 @@
+version: '3.8'
+services:
+  db:
+    image: postgres:15
+    container_name: my-postgres
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./schema.sql:/docker-entrypoint-initdb.d/schema.sql
+
+  web:
+    build: .
+    container_name: flask-app
+    depends_on:
+      - db
+    env_file:
+      - .env
+    environment:
+      DATABASE_CONNECTION_STRING: "dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} host=db port=5432"
+    ports:
+      - "5000:5000"
+
+volumes:
+  pgdata:
