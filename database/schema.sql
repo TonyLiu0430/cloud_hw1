@@ -20,6 +20,12 @@ CREATE TABLE sale_items (
     seller_id INTEGER REFERENCES users(id)
 );
 
+CREATE TABLE sale_item_images (
+    id SERIAL PRIMARY KEY,
+    sale_item_id uuid REFERENCES sale_items(id),
+    image_url TEXT NOT NULL
+);
+
 CREATE TABLE bids (
     id SERIAL PRIMARY KEY,
     sale_item_id uuid REFERENCES sale_items(id),
