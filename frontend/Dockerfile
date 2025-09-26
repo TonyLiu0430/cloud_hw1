@@ -1,11 +1,10 @@
 FROM oven/bun:latest
-
 WORKDIR /app
 
-COPY . .
-
+COPY package.json bun.lock ./
 RUN bun install
 
-RUN bun run build
+COPY . .
+#RUN bun run build
 
-CMD ["bun", "run", "preview", "--", "--host", "0.0.0.0", "--port", "3000"]
+CMD ["bun", "run", "dev", "--", "--host", "0.0.0.0", "--port", "3000"]

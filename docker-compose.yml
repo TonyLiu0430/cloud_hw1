@@ -22,11 +22,15 @@ services:
       DATABASE_CONNECTION_STRING: "dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} host=db port=5432"
     ports:
       - "5000:5000"
+    volumes:
+      - ./temp/uploads:/app/uploads
   frontend:
     build: ./frontend
     container_name: vite-frontend
     ports:
       - "3000:3000"
+    volumes:
+    - ./frontend:/app
 
 volumes:
   pgdata:
