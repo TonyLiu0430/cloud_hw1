@@ -16,10 +16,9 @@ services:
     container_name: flask-backend
     depends_on:
       - db
-    env_file:
-      - .env
     environment:
       DATABASE_CONNECTION_STRING: "dbname=${POSTGRES_DB} user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} host=db port=5432"
+      JWT_SECRET_KEY: "${JWT_SECRET_KEY}"
     ports:
       - "5000:5000"
     volumes:
@@ -31,6 +30,11 @@ services:
       - "3000:3000"
     # volumes:
     # - ./frontend:/app
+  cloudflared:
+    image: cloudflare/cloudflared:latest
+    command: tunnel run
+    environment:
+      - TUNNEL_TOKEN=${CLOUDFLARE_TUNNEL}
 
 volumes:
   pgdata:

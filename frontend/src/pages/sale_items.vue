@@ -2,7 +2,6 @@
   <section class="list-wrap">
     <header class="list-head">
       <h2>商品列表</h2>
-      <p class="muted">點選左右切換或按鍵盤 ← → 瀏覽多張圖片</p>
     </header>
 
     <div class="card-grid">
@@ -77,8 +76,9 @@
               <span class="value">{{ fmt(item.end_date) }}</span>
             </div>
           </div>
-
-          <router-link :to="`/sale_item/${item.id}`" class="btn btn--primary">查看詳情</router-link>
+            <div class="flex justify-center items-center w-full">
+              <router-link :to="`/sale_item/${item.id}`" class="btn btn--primary">我要出價</router-link>
+            </div>
         </div>
       </article>
     </div>
@@ -238,6 +238,6 @@ onMounted(load)
 .btn:hover{ transform:translateY(-1px); box-shadow:0 4px 14px rgba(2,6,23,.06); border-color:#b6ccff; }
 .btn--primary{
   background: linear-gradient(180deg, rgba(37,99,235,.12), rgba(6,182,212,.10));
-  color:#0b1220; font-weight:800; border-color:#9db7ff;
+  color:#0b1220; font-weight:700; border-color:#9db7ff;
 }
 </style>

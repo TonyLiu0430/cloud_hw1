@@ -29,6 +29,14 @@ def test_vue():
 def check_login():
     return {'message': 'logged in'}, 200
 
+@app.route('/api/logout', methods=['POST'])
+@jwt_required()
+def logout():
+    resp = make_response()
+    cookie_name = str(app.config.get('JWT_ACCESS_COOKIE_NAME', 'Authorization')) # type: ignore
+    resp.set_cookie(cookie_name, "", httponly=True)
+    return resp
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()

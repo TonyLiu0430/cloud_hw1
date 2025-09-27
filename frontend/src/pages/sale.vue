@@ -26,8 +26,16 @@
         </div>
 
         <div class="field">
-          <label for="end_date">結束時間 <small class="hint">（30 分鐘粒度）</small></label>
-          <input v-model="form.end_date" id="end_date" type="datetime-local" class="input" step="1800" required />
+          <label for="end_date">結束時間</label>
+          <!-- <input v-model="form.end_date" id="end_date" type="datetime-local" class="input" step="1800" required /> -->
+          <VueDatePicker
+            v-model="form.end_date"
+            :enable-time-picker="true"
+            :minutes-increment="30"
+            format="yyyy-MM-dd HH:mm"
+            :is-24="true"
+            placeholder="選擇日期時間"
+          />
         </div>
       </div>
 
@@ -82,14 +90,33 @@
 import { ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { ofetch } from 'ofetch'
+import VueDatePicker from '@vuepic/vue-datepicker';
+import '@vuepic/vue-datepicker/dist/main.css';
 
 const router = useRouter()
+
+const ceil30 = (date: Date) => {
+  let hr = date.getHours();
+  let mn = date.getMinutes();
+
+  if (mn % 30 !== 0) {
+    mn = mn + (30 - (mn % 30));
+    if (mn >= 60) {
+      hr += 1;
+      mn -= 60;
+    }
+  }
+
+  date.setHours(hr, mn, 0, 0);
+
+  return date
+};
 
 const form = ref({
   title: '',
   description: '',
   starting_price: 0,
-  end_date: '',
+  end_date: ceil30(new Date()),
 })
 
 /* ===== 多圖上傳狀態 ===== */
@@ -170,12 +197,14 @@ const submitForm = async () => {
     } else {
       alert(`商品已上架。\n成功 ${okList.length} 張，失敗 ${failList.length} 張：\n- ` + failList.join('\n- '))
     }
-    router.push('/')
+    router.push(`/sale_item/${saleItemId}`)
   } catch (error) {
     console.error(error)
     alert('上架商品失敗，請稍後再試。')
   }
 }
+
+
 </script>
 
 <style scoped>
@@ -290,4 +319,10 @@ const submitForm = async () => {
   color:#0b1220; font-weight:800; border-color:#9db7ff;
 }
 .hint{ color:#64748b; font-weight:400; margin-left:6px; }
+.picker {
+  width: 250px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
 </style>
