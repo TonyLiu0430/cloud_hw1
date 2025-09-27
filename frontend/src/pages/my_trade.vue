@@ -133,7 +133,7 @@ const fetchSaleData = async () => {
     for (const s of saleData.value) {
       s.end_date = new Date(s.end_date)
       if (s.highest_bid == null) {
-        s.highest_bid = '還沒有人出價喔'
+        s.highest_bid = '還沒有人出價喔🥲'
       }
       get_img_url(s.sale_item_id).then((res) => {
         s.img_url = res
