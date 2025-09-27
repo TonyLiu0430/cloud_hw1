@@ -23,6 +23,11 @@
       我要拍賣
     </el-menu-item>
     <el-menu-item
+      v-if="userStore.isLoggedIn"
+      index="/my_trade">
+      我的交易
+    </el-menu-item>
+    <el-menu-item
       v-if="!userStore.isLoggedIn"
       index="/login">
       登錄

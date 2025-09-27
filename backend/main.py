@@ -1,3 +1,4 @@
+from typing import List
 from flask import Flask, request, jsonify, make_response, g, send_file
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from dotenv import load_dotenv
@@ -144,7 +145,8 @@ def get_my_bids():
     cur.execute(
         """
         SELECT DISTINCT ON (b.sale_item_id) b.id, b.sale_item_id, b.price, 
-            s.id, s.title, s.description, s.starting_price, s.end_date, s.seller_id
+            s.id, s.title, s.description, s.starting_price, s.end_date, s.seller_id,
+            (SELECT MAX(price) FROM bids WHERE sale_item_id = b.sale_item_id) AS highest_price
         FROM bids b
         INNER JOIN sale_items s   
             ON b.sale_item_id = s.id
@@ -160,7 +162,15 @@ def get_my_bids():
                 "bid_id": bid[0],
                 "sale_item_id": bid[1],
                 "price": int(bid[2]),
-                #"seller_id": bid[3]
+                "sale_item": {
+                    "id": bid[3],
+                    "title": bid[4],
+                    "description": bid[5],
+                    "starting_price": int(bid[6]),
+                    "end_date": bid[7].isoformat() if bid[7] else None,
+                    "seller_id": bid[8],
+                    "highest_price": int(bid[9]) if bid[9] is not None else None
+                }
             } for bid in bids
         ]
     })
