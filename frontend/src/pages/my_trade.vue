@@ -13,6 +13,11 @@
         <el-table-column prop="title" label="商品名" width="180" />
         <el-table-column prop="highest_bid" label="最高價" width="180" />
         <el-table-column prop="end_date" label="結束時間" />
+        <el-table-column label="剩餘時間">
+          <template #default="{ row }">
+            {{ show_last_time(row.end_date) }}
+          </template>
+        </el-table-column>
         <el-table-column label="拍賣頁面">
           <template #default="{ row }">
             <el-button plain @click="to_sale_page(row.sale_item_id)">至拍賣頁面</el-button>
@@ -38,6 +43,11 @@
         <el-table-column prop="highest_bid" label="最高價" width="180" />
         <el-table-column prop="my_bid" label="我的出價" width="180" />
         <el-table-column prop="end_date" label="結束時間" />
+        <el-table-column label="剩餘時間">
+          <template #default="{ row }">
+            {{ show_last_time(row.end_date) }}
+          </template>
+        </el-table-column>
         <el-table-column prop="status" label="狀態" />
         <el-table-column label="拍賣頁面">
           <template #default="{ row }">
@@ -168,6 +178,40 @@ const to_sale_page = async (id: string) => {
   await router.push(`/sale_item/${id}`)
 }
 
+const show_last_time = (end_date : Date) => {
+  const now = new Date()
+  const diffMs = end_date.getTime() - now.getTime()
+  if (diffMs <= 0) {
+    const diffSec = Math.floor((now.getTime() - end_date.getTime()) / 1000)
+    const days = Math.floor(diffSec / (3600 * 24))
+    const hours = Math.floor((diffSec % (3600 * 24)) / 3600)
+    const minutes = Math.floor((diffSec % 3600) / 60)
+    if (days > 0) return `已結束 ${days}天${hours}小時前`
+    if (hours > 0) return `已結束 ${hours}小時${minutes}分鐘前`
+    return `已結束 ${minutes}分鐘前`
+  }
+  const diffSec = Math.floor(diffMs / 1000)
+  const days = Math.floor(diffSec / (3600 * 24))
+  const hours = Math.floor((diffSec % (3600 * 24)) / 3600)
+  const minutes = Math.floor((diffSec % 3600) / 60)
+  if (days > 0) return `${days}天${hours}小時`
+  if (hours > 0) return `${hours}小時${minutes}分鐘`
+  return `${minutes}分鐘`
+}
+
+// 定時刷新 bidData 以觸發顯示更新
+import { onUnmounted } from 'vue'
+let timer: number | undefined
+onMounted(() => {
+  timer = window.setInterval(() => {
+    // 只要 bidData 重新賦值即可觸發渲染
+    bidData.value = [...bidData.value]
+  }, 1000)
+})
+onUnmounted(() => {
+  if (timer) clearInterval(timer)
+})
+
 </script>
 
 <style>
@@ -176,5 +220,12 @@ const to_sale_page = async (id: string) => {
 }
 .el-table .ended-row {
   --el-table-tr-bg-color: #f0f0f0;
+}
+
+.el-table .in-progress-row .el-table__cell {
+  --el-table-row-hover-bg-color: var(--el-color-success-light-9);
+}
+.el-table .ended-row .el-table__cell {
+  --el-table-row-hover-bg-color: #f0f0f0;
 }
 </style>
