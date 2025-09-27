@@ -101,6 +101,71 @@ def sale_a_item():
     cur.close()
     return {'message' : 'success', 'item_uuid' : str(item_uuid)}
 
+@app.route('/api/my_sale', methods=['GET'])
+@jwt_required()
+def get_my_sale():
+    userId = str(get_jwt_identity())
+    db = g.db_conn
+    cur = db.cursor()
+    cur.execute(
+        """
+        SELECT DISTINCT ON (s.id)
+            s.id, s.title, s.description, s.starting_price, s.end_date,
+            b.price, b.user_id
+        FROM sale_items s
+        LEFT JOIN bids b
+            ON s.id = b.sale_item_id
+        WHERE s.seller_id = %s
+        ORDER BY s.id, b.price DESC
+        """,
+        (userId,)
+    )
+    items = cur.fetchall()
+    return jsonify({
+        "sales" : [
+            {
+                "sale_item_id" : item[0],
+                "title": item[1],
+                "description": item[2],
+                "starting_price": int(item[3]),
+                "end_date": item[4].isoformat() if item[4] else None,
+                "highest_bid": int(item[5]) if item[5] is not None else None,
+                "highest_bidder": item[6]
+            } for item in items
+        ]
+    })
+
+@app.route('/api/my_bids', methods=['GET'])
+@jwt_required()
+def get_my_bids():
+    userId = str(get_jwt_identity())
+    db = g.db_conn
+    cur = db.cursor()
+    cur.execute(
+        """
+        SELECT DISTINCT ON (b.sale_item_id) b.id, b.sale_item_id, b.price, 
+            s.id, s.title, s.description, s.starting_price, s.end_date, s.seller_id
+        FROM bids b
+        INNER JOIN sale_items s   
+            ON b.sale_item_id = s.id
+        WHERE user_id = %s
+        ORDER BY b.sale_item_id, b.price DESC
+        """,
+        (userId,)
+    )
+    bids = cur.fetchall()
+    return jsonify({
+        "bids" : [
+            {
+                "bid_id": bid[0],
+                "sale_item_id": bid[1],
+                "price": int(bid[2]),
+                #"seller_id": bid[3]
+            } for bid in bids
+        ]
+    })
+        
+
 @app.route('/api/sale_item/<item_uuid>/bid', methods=['POST'])
 @jwt_required()
 def place_bid(item_uuid: str): # type: ignore
@@ -280,11 +345,12 @@ def upload_image(sale_item_uuid: str):
 # 機制可能有問題 順序可能會錯 但是先不管
 @app.route('/api/sale_item/images/<sale_item_uuid>', methods=['GET'])
 def get_item_images(sale_item_uuid: str):
+    num = request.args.get('num', default=10, type=int)
     db = get_db_conn()
     cur = db.cursor()
     cur.execute(
-        "SELECT image_url FROM sale_item_images WHERE sale_item_id = %s ORDER BY id ASC",
-        (sale_item_uuid,)
+        "SELECT image_url FROM sale_item_images WHERE sale_item_id = %s ORDER BY id ASC LIMIT %s",
+        (sale_item_uuid, num)
     )
     images = [row[0] for row in cur.fetchall()]
     cur.close()
