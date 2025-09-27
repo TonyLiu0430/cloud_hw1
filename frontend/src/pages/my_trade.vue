@@ -10,20 +10,25 @@
           style="width: 100%"
           :row-class-name="saletableRowClassName"
       >
-        <el-table-column prop="title" label="商品名" width="180" />
-        <el-table-column prop="highest_bid" label="最高價" width="180" />
-        <el-table-column prop="end_date" label="結束時間" />
-        <el-table-column label="剩餘時間">
+        <el-table-column label="商品圖" width="120" align="center">
+          <template #default="{ row }">
+            <el-image style="width: 90px; height: 90px" :src="row.img_url" fit="fill" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="title" label="商品名" width="180" headerAlign="center"/>
+        <el-table-column prop="highest_bid" label="最高價" width="180" headerAlign="center"/>
+        <el-table-column prop="end_date" label="結束時間" headerAlign="center"/>
+        <el-table-column label="剩餘時間" headerAlign="center">
           <template #default="{ row }">
             {{ show_last_time(row.end_date) }}
           </template>
         </el-table-column>
-        <el-table-column label="拍賣頁面">
+        <el-table-column label="拍賣頁面" width="130" align="center">
           <template #default="{ row }">
             <el-button plain @click="to_sale_page(row.sale_item_id)">至拍賣頁面</el-button>
           </template>
         </el-table-column>
-        <el-table-column label="聯絡買家">
+        <el-table-column label="聯絡買家" width="130" align="center">
           <el-button plain>聯絡買家</el-button>
         </el-table-column>
       </el-table>
@@ -37,24 +42,29 @@
           :data="bidData"
           :border="true"
           style="width: 100%"
-          :row-class-name="saletableRowClassName"
+          :row-class-name="bidtableRowClassName"
       >
-        <el-table-column prop="title" label="商品名" width="180" />
-        <el-table-column prop="highest_bid" label="最高價" width="180" />
-        <el-table-column prop="my_bid" label="我的出價" width="180" />
-        <el-table-column prop="end_date" label="結束時間" />
-        <el-table-column label="剩餘時間">
+        <el-table-column label="商品圖" width="120" align="center">
+          <template #default="{ row }">
+            <el-image style="width: 90px; height: 90px" :src="row.img_url" fit="fill" />
+          </template>
+        </el-table-column>
+        <el-table-column prop="title" label="商品名" width="180" headerAlign="center"/>
+        <el-table-column prop="highest_bid" label="最高價" width="130" headerAlign="center"/>
+        <el-table-column prop="my_bid" label="我的出價" width="130" headerAlign="center"/>
+        <el-table-column prop="end_date" label="結束時間" headerAlign="center"/>
+        <el-table-column label="剩餘時間" headerAlign="center">
           <template #default="{ row }">
             {{ show_last_time(row.end_date) }}
           </template>
         </el-table-column>
-        <el-table-column prop="status" label="狀態" />
-        <el-table-column label="拍賣頁面">
+        <el-table-column prop="status" label="狀態" headerAlign="center"/>
+        <el-table-column label="拍賣頁面" width="130" align="center">
           <template #default="{ row }">
             <el-button plain @click="to_sale_page(row.sale_item_id)">至拍賣頁面</el-button>
           </template>
         </el-table-column>
-        <el-table-column label="聯絡賣家">
+        <el-table-column label="聯絡賣家" width="130" align="center">
           <el-button plain>聯絡賣家</el-button>
         </el-table-column>
       </el-table>
@@ -76,6 +86,7 @@ interface Sale {
     sale_item_id: string
     starting_price: number
     title: string
+    img_url: string | undefined
 }
 
 interface Bid {
@@ -85,6 +96,7 @@ interface Bid {
   status: string,
   sale_item_id: string,
   end_date: Date
+  img_url: string | undefined
 }
 
 interface BidResult {
@@ -106,6 +118,15 @@ const saleData = ref<Sale[]>()
 const bidData = ref<Bid[]>([])
 const router = useRouter()
 
+const get_img_url = async (sale_item_id : string) => {
+  const { images } = await ofetch(`/api/sale_item/images/${sale_item_id}`,{
+    query: {
+      num: 1
+    }
+  })
+  return images[0] ? images[0] as string : '/default.jpg'
+}
+
 const fetchSaleData = async () => {
   saleData.value = (await ofetch('/api/my_sale')).sales
   if (saleData.value) {
@@ -114,6 +135,9 @@ const fetchSaleData = async () => {
       if (s.highest_bid == null) {
         s.highest_bid = '還沒有人出價喔'
       }
+      get_img_url(s.sale_item_id).then((res) => {
+        s.img_url = res
+      })
     }
   }
 }
@@ -128,7 +152,14 @@ const fetchBidData = async () => {
         my_bid: bid.price,
         status: get_status(bid.price, bid.sale_item.highest_price, new Date(bid.sale_item.end_date)),
         sale_item_id: bid.sale_item_id,
-        end_date: new Date(bid.sale_item.end_date)
+        end_date: new Date(bid.sale_item.end_date),
+        img_url: undefined
+      })
+      const cur = bidData.value[bidData.value.length - 1]
+      get_img_url(bid.sale_item_id).then((res) => {
+        if(cur) {
+          cur.img_url = res;
+        }
       })
     }
   }
@@ -156,6 +187,23 @@ const saletableRowClassName = ({
     return 'ended-row'
   }
   return ''
+}
+
+const bidtableRowClassName = ({
+  row,
+  rowIndex,
+}: {
+  row: Bid
+  rowIndex: number
+}) => {
+  const currentDate = new Date()
+  if(currentDate <= row.end_date) {
+    return 'in-progress-row'
+  }
+  else if(row.my_bid == row.highest_bid){
+    return 'win-row'
+  }
+  return 'ended-row'
 }
 
 const get_status = (my_bid : number, h_bid : number, date : Date) => {
@@ -221,11 +269,16 @@ onUnmounted(() => {
 .el-table .ended-row {
   --el-table-tr-bg-color: #f0f0f0;
 }
-
 .el-table .in-progress-row .el-table__cell {
   --el-table-row-hover-bg-color: var(--el-color-success-light-9);
 }
 .el-table .ended-row .el-table__cell {
   --el-table-row-hover-bg-color: #f0f0f0;
+}
+.el-table .win-row {
+  --el-table-tr-bg-color: #fff9c4;
+}
+.el-table .win-row .el-table__cell {
+  --el-table-row-hover-bg-color: #fff9c4;
 }
 </style>
