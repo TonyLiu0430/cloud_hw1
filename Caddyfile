@@ -1,0 +1,11 @@
+:4000 {
+  handle /api/message* {
+    reverse_proxy msg_backend:4350
+  }
+  handle /api* {
+    reverse_proxy backend:5000
+  }
+  handle {
+    reverse_proxy frontend:3000
+  }
+}

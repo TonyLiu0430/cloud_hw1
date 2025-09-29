@@ -25,7 +25,7 @@ def test_vue():
 def check_login():
     return {'message': 'logged in'}, 200
 
-@app.route('/internal/user_id', methods=['GET'])
+@app.route('/api/user_id', methods=['GET'])
 @jwt_required()
 def get_user_id():
     return str(get_jwt_identity()), 200
