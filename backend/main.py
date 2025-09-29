@@ -7,6 +7,7 @@ import bcrypt
 from datetime import datetime, timedelta
 from werkzeug.datastructures import FileStorage
 import uuid
+from dateutil.parser import isoparse
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
@@ -96,7 +97,7 @@ def sale_a_item():
     description = data['description']
     starting_price = data['starting_price']
     end_date_str = data['end_date']
-    end_date = datetime.fromisoformat(end_date_str)
+    end_date = isoparse(end_date_str)
     if title is None or description is None or starting_price is None:
         return bad_request("Parameter `title` and `description` and `starting_price` must be not empty")
     db = g.db_conn
