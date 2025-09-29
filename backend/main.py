@@ -1,16 +1,12 @@
 from typing import List
 from flask import Flask, request, jsonify, make_response, g, send_file
 from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
-from dotenv import load_dotenv
 import os
 import psycopg2
 import bcrypt
 from datetime import datetime, timedelta
 from werkzeug.datastructures import FileStorage
 import uuid
-
-
-load_dotenv()
 
 app = Flask(__name__)
 app.config['JWT_SECRET_KEY'] = os.environ.get('JWT_SECRET_KEY')
@@ -28,6 +24,11 @@ def test_vue():
 @jwt_required()
 def check_login():
     return {'message': 'logged in'}, 200
+
+@app.route('/internal/user_id', methods=['GET'])
+@jwt_required()
+def get_user_id():
+    return str(get_jwt_identity()), 200
 
 @app.route('/api/logout', methods=['POST'])
 @jwt_required()
@@ -396,7 +397,8 @@ def close_db_conn(exception): # type: ignore
     db_conn = g.pop('db_conn', None)
     if db_conn is not None:
         db_conn.close()
+    
 
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0')
+    app.run(debug=True, threaded=True, host='0.0.0.0')

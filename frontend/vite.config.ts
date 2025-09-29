@@ -19,6 +19,11 @@ export default defineConfig({
         target: 'http://backend:5000', // Flask backend in docker compose
         changeOrigin: true,
         secure: false,
+      },
+      '/api/message': {
+        target: 'http://msg_backend:4350', // message backend in docker compose
+        changeOrigin: true,
+        secure: false,
       }
     }
   }
