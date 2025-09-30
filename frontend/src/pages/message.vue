@@ -67,7 +67,7 @@
           <el-input
             v-model="input"
             placeholder="輸入訊息…"
-            @keyup.enter.native="send"
+            @keydown.enter.native="e => !e.isComposing && send()"
             class="input"
           />
           <el-button type="primary" class="send" @click="send">送出</el-button>
