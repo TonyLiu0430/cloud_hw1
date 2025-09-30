@@ -165,12 +165,16 @@ func main() {
 			fmt.Println("Error getting history:", err)
 			return
 		}
-		historyByte, err := json.Marshal(history)
-		if err != nil {
-			fmt.Println("Error marshalling history:", err)
-			return
+		if len(history) == 0 {
+			c.Write(r.Context(), websocket.MessageText, []byte("[]"))
+		} else {
+			historyByte, err := json.Marshal(history)
+			if err != nil {
+				fmt.Println("Error marshalling history:", err)
+				return
+			}
+			c.Write(r.Context(), websocket.MessageText, historyByte)
 		}
-		c.Write(r.Context(), websocket.MessageText, historyByte)
 
 		clients.Store(userId, WebSockClient{
 			r: r,

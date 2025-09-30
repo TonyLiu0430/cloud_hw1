@@ -44,16 +44,18 @@
 
       <template v-else>
         <section ref="scrollEl" class="chat-body">
-          <div
-            v-for="(m, i) in messages"
-            :key="i"
-            :class="['row', m.sender_uuid === userId ? 'me' : 'other']"
-          >
-            <div class="bubble">
-              <div class="text">{{ m.message }}</div>
-              <div class="meta">{{ fmtTime(m.timestamp) }}</div>
+          <el-scrollbar height="600px" ref="scrollbarRef">
+            <div
+              v-for="(m, i) in messages"
+              :key="i"
+              :class="['row', m.sender_uuid === userId ? 'me' : 'other']"
+            >
+              <div class="bubble">
+                <div class="text">{{ m.message }}</div>
+                <div class="meta">{{ fmtTime(m.timestamp) }}</div>
+              </div>
             </div>
-          </div>
+          </el-scrollbar>
 
           <div v-if="!messages.length" class="empty">
             <span class="emoji">💬</span>
@@ -61,15 +63,15 @@
           </div>
         </section>
 
-        <form class="chat-input" @submit.prevent="send">
+        <div class="chat-input">
           <el-input
             v-model="input"
             placeholder="輸入訊息…"
-            @keyup.enter="send"
+            @keyup.enter.native="send"
             class="input"
           />
           <el-button type="primary" class="send" @click="send">送出</el-button>
-        </form>
+        </div>
       </template>
     </main>
   </section>
@@ -79,6 +81,7 @@
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { ofetch } from 'ofetch'
 import { useRoute, useRouter } from 'vue-router'
+import type { ScrollbarInstance } from 'element-plus'
 
 /** ===== 型別 ===== */
 type MessageReq = { reciver_uuid: string; message: string }
@@ -95,6 +98,8 @@ type UserListItem = { peerId: string; lastTime: string }          // 前端用
 const route = useRoute()
 const router = useRouter()
 
+const scrollbarRef = ref<ScrollbarInstance>()
+
 /** ===== 狀態 ===== */
 const userId = ref('')
 const userList = ref<UserListItem[]>([])
@@ -109,8 +114,9 @@ let ws: WebSocket | null = null
 
 /** ===== 小工具 ===== */
 function scrollToBottom() {
-  if (!scrollEl.value) return
-  scrollEl.value.scrollTop = scrollEl.value.scrollHeight
+  if (!scrollbarRef.value) return
+  const scrollHeight = scrollbarRef.value?.wrapRef?.scrollHeight || 0
+  scrollbarRef.value.scrollTo({ top: scrollHeight })
 }
 function fmtTime(ts?: string) {
   const d = ts ? new Date(ts) : new Date()
@@ -165,6 +171,7 @@ function connectWS(peerId: string) {
 
   let isHistory = true
   ws.onmessage = (evt) => {
+    if(evt.data == null) return;
     const payload = JSON.parse(evt.data)
     if (isHistory) {
       messages.value = payload as ChatMessage[]
@@ -200,13 +207,7 @@ function send() {
   const req: MessageReq = { reciver_uuid: activePeer.value, message: text }
   ws.send(JSON.stringify(req))
 
-  // 樂觀更新
-  messages.value.push({
-    sender_uuid: userId.value,
-    reciver_uuid: activePeer.value,
-    message: text,
-    timestamp: new Date().toISOString(),
-  })
+  // 不准樂觀
   input.value = ''
   nextTick(scrollToBottom)
 }

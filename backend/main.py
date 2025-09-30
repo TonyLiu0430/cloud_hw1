@@ -297,6 +297,7 @@ def get_sale_items():
                ) AS first_image_url
         FROM sale_items s
         LEFT JOIN bids b ON s.id = b.sale_item_id
+        WHERE s.end_date > NOW()
         GROUP BY s.id
         ORDER BY s.end_date ASC
         """

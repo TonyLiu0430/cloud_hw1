@@ -29,7 +29,9 @@
           </template>
         </el-table-column>
         <el-table-column label="聯絡買家" width="130" align="center">
-          <el-button plain>聯絡買家</el-button>
+          <template #default="{ row }">
+            <el-button plain @click="contact_user(row.highest_bidder)">聯絡買家</el-button>
+          </template>
         </el-table-column>
       </el-table>
     </el-card>
@@ -65,7 +67,9 @@
           </template>
         </el-table-column>
         <el-table-column label="聯絡賣家" width="130" align="center">
-          <el-button plain>聯絡賣家</el-button>
+          <template #default="{ row }">
+            <el-button plain @click="contact_user(row.seller_id)">聯絡賣家</el-button>
+          </template>
         </el-table-column>
       </el-table>
     </el-card>
@@ -95,7 +99,8 @@ interface Bid {
   my_bid: number,
   status: string,
   sale_item_id: string,
-  end_date: Date
+  end_date: Date,
+  seller_id: string,
   img_url: string | undefined
 }
 
@@ -153,6 +158,7 @@ const fetchBidData = async () => {
         status: get_status(bid.price, bid.sale_item.highest_price, new Date(bid.sale_item.end_date)),
         sale_item_id: bid.sale_item_id,
         end_date: new Date(bid.sale_item.end_date),
+        seller_id: bid.sale_item.seller_id,
         img_url: undefined
       })
       const cur = bidData.value[bidData.value.length - 1]
@@ -163,6 +169,10 @@ const fetchBidData = async () => {
       })
     }
   }
+}
+
+const contact_user = async (user_id : string) => {
+  await router.push(`/message?peer=${user_id}`)
 }
 
 onMounted(async () => {
