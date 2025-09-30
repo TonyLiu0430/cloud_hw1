@@ -115,7 +115,7 @@ func main() {
 	if !ok {
 		panic("cannot get mongodb connection string in environ")
 	}
-	for range 10 {
+	for range 20 {
 		var err error
 		mongoClient, err = mongo.Connect(context.TODO(), options.Client().ApplyURI(mongodb_connect_string))
 		if err == nil {
