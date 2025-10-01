@@ -198,9 +198,9 @@ const submitForm = async () => {
       alert(`商品已上架。\n成功 ${okList.length} 張，失敗 ${failList.length} 張：\n- ` + failList.join('\n- '))
     }
     router.push(`/sale_item/${saleItemId}`)
-  } catch (error) {
+  } catch (error: any) {
     console.error(error)
-    alert('上架商品失敗，請稍後再試。')
+    alert(`上架商品失敗，請稍後再試。 error message :${error.data?.message}`)
   }
 }
 

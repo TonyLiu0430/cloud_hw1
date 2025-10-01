@@ -4,7 +4,7 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 import os
 import psycopg2
 import bcrypt
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from werkzeug.datastructures import FileStorage
 import uuid
 from dateutil.parser import isoparse
@@ -100,6 +100,8 @@ def sale_a_item():
     end_date = isoparse(end_date_str)
     if title is None or description is None or starting_price is None:
         return bad_request("Parameter `title` and `description` and `starting_price` must be not empty")
+    if end_date <= datetime.now(timezone(timedelta(hours=8))): # utc + 8 for taiwan
+        return bad_request("Parameter `end_date` must be in the future")
     db = g.db_conn
     cur = db.cursor()
     seller_id = str(get_jwt_identity())
