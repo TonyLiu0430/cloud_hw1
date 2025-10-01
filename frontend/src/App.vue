@@ -19,6 +19,7 @@
         <el-menu-item index="/sale_items">商品列表</el-menu-item>
         <el-menu-item v-if="userStore.isLoggedIn" index="/sale">我要拍賣</el-menu-item>
         <el-menu-item v-if="userStore.isLoggedIn" index="/my_trade">我的交易</el-menu-item>
+        <el-menu-item v-if="userStore.isLoggedIn" index="/message">訊息</el-menu-item>
         <el-menu-item v-if="!userStore.isLoggedIn" index="/login">登錄</el-menu-item>
         <el-menu-item v-if="userStore.isLoggedIn" index="/logout">登出</el-menu-item>
       </el-menu>

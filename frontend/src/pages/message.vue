@@ -179,8 +179,16 @@ function connectWS(peerId: string) {
       nextTick(scrollToBottom)
       return
     }
-    messages.value.push(payload as ChatMessage)
-    nextTick(scrollToBottom)
+    const msg = payload as ChatMessage
+    if (msg.reciver_uuid == activePeer.value || msg.sender_uuid == activePeer.value) {
+      // message from current peer
+      messages.value.push(payload as ChatMessage)
+      nextTick(scrollToBottom)
+    }
+    else {
+      // TODO
+      // 更新左側userList
+    }
   }
 
   ws.onclose = () => {
