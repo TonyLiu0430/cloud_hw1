@@ -39,13 +39,32 @@ def logout():
     resp.set_cookie(cookie_name, "", httponly=True)
     return resp
 
+def check_username_format(username: str) -> bool:
+    if len(username) <= 1 : #一個字的username也別想過
+        return False
+    if not username.isalnum():
+        return False
+    return True
+
+def check_password_format(password: str) -> bool:
+    if len(password) <= 1 : #一個字的password也別想過
+        return False
+    if not password.isalnum():
+        return False
+    return True
+
 @app.route('/api/login', methods=['POST'])
 def login():
     data = request.get_json()
     username = data['username']
     password = data['password']
+
     if username is None or password is None:
         return bad_request('Missing Parameter `username` or `password`')
+    
+    if not check_username_format(username) or not check_password_format(password):
+        return bad_request('Invalid `username` or `password` format')
+    
     db = g.db_conn
     cur = db.cursor()
     cur.execute("SELECT id, password FROM users WHERE username = %s", (username,))
@@ -70,6 +89,10 @@ def register():
     password = data['password']
     if username is None or password is None:
         return bad_request('Missing Parameter `username` or `password`')
+    
+    if not check_username_format(username) or not check_password_format(password):
+        return bad_request('Invalid `username` or `password` format')
+    
     db = g.db_conn
     cur = db.cursor()
     cur.execute("SELECT password FROM users WHERE username = %s", (username,))
@@ -326,7 +349,7 @@ def save_file(file: FileStorage) -> str:
     if file.filename is None or file.filename == '':
         raise ValueError("No selected file")
     ext = os.path.splitext(file.filename)[1]
-    if ext not in ['.jpeg', '.jpg', '.png']:
+    if ext not in ['.jpeg', '.jpg', '.png', '.webp']:
         raise ValueError("Not support file")
     file_uuid = f"{uuid.uuid4().hex}{ext}"
     filepath = os.path.join(app.config['UPLOAD_FOLDER'], file_uuid) # type: ignore

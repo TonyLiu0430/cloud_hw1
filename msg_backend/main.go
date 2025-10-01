@@ -46,7 +46,7 @@ func get_userId(r *http.Request) (string, error) {
 	client := http.DefaultClient
 	backend_url, ok := os.LookupEnv("BACKEND_URL")
 	if !ok {
-		backend_url = "backend"
+		backend_url = "http://backend"
 	}
 	cookies := r.Cookies()
 
