@@ -133,7 +133,7 @@ func main() {
 	// websocket message service
 	mux := http.NewServeMux()
 	mux.HandleFunc("/api/message/message", func(w http.ResponseWriter, r *http.Request) {
-		// 姬芭 用 gin 會有 bug !!!
+		// 用 gin 會有 bug !!!
 		userId, err := get_userId(r)
 		if err != nil {
 			http.Error(w, "Permission denied", http.StatusUnauthorized)
