@@ -1,13 +1,16 @@
 <template>
     <div>
-        <!-- <div v-if="images && images.length">
-            <button @click="prevImage" :disabled="currentIndex === 0">上一張</button>
-            <img :src="images[currentIndex]" alt="商品圖片" style="max-width: 400px; display: block; margin: 16px auto;" />
-            <button @click="nextImage" :disabled="currentIndex === images.length - 1">下一張</button>
-            <div style="text-align: center; margin-top: 8px;">
+        <div v-if="images && images.length" class="container">
+            <button @click="prevImage" :disabled="currentIndex === 0" class="btn">⬅ 上一張</button>
+
+            <img :src="images[currentIndex]" alt="商品圖片" class="img" />
+
+            <button @click="nextImage" :disabled="currentIndex === images.length - 1" class="btn">下一張 ➡</button>
+
+            <div class="counter">
                 {{ currentIndex + 1 }} / {{ images.length }}
             </div>
-        </div> -->
+        </div>
         <el-card v-if="item" class="box-card" style="max-width: 400px; margin: 24px auto;">
             <div slot="header" class="clearfix">
                 <span>{{ item.title }}</span>
@@ -121,5 +124,61 @@ const place_bid = async () => {
         refresh_item_status()
     })
 }
-
+let currentIndex =ref(0);
+function prevImage(){
+    if(currentIndex.value === 0){
+        return;
+    }
+    else{
+        currentIndex.value -=1;
+    }
+}
+function nextImage(){
+    if(currentIndex.value === images.length){
+        return;
+    }
+    else{
+        currentIndex.value+=1;
+    }
+}
 </script>
+
+<style scoped>
+.clearfix{margin-bottom: 8px; text-decoration: underline; font-weight: bold;}
+.container {
+  display: flex;
+  align-items: center;       /* 垂直置中 */
+  justify-content: center;   /* 水平置中整個區塊 */
+  gap: 16px;                 /* 按鈕與圖片間距 */
+  flex-wrap: wrap;           /* 小螢幕自動換行 */
+}
+
+.img {
+  max-width: 400px;
+  display: block;
+  border: 2px solid #ccc;
+  border-radius: 8px;
+}
+
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  background-color: black;
+  color: white;
+  font-weight: bold;
+  transition: all 0.3s;
+}
+
+.btn:hover {
+  background-color: black;
+  transform: scale(1.05);
+}
+
+.counter {
+  width: 100%;
+  text-align: center;
+  margin-top: 8px;
+}
+</style>
